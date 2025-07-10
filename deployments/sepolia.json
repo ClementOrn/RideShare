@@ -1,0 +1,11 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "contract": "PrivateRideShare",
+  "address": "0x5986FF19B524534F159af67f421ca081c6F5Acff",
+  "deployer": "0x539eafc442f2604B3677C3Ead85B0f6669E45195",
+  "transactionHash": "0x9f8f5b92aa1e92261a1fafd1d8203a72fa9a8a248f30413dbb4c87329dcefc07",
+  "blockNumber": null,
+  "timestamp": "2025-10-23T12:08:01.726Z",
+  "constructorArguments": []
+}
