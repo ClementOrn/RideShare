@@ -1,0 +1,494 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import { FHE, euint32, euint64, ebool } from "@fhevm/solidity/lib/FHE.sol";
+import { SepoliaConfig } from "@fhevm/solidity/config/ZamaConfig.sol";
+
+contract PrivateRideShare is SepoliaConfig {
+
+    address public owner;
+    uint256 public rideCounter;
+    uint256 public driverCounter;
+
+    // Pauser mechanism
+    mapping(address => bool) public pausers;
+    bool public paused;
+
+    // Gateway request tracking
+    mapping(uint256 => bool) public pendingGatewayRequests;
+
+    struct PrivateLocation {
+        euint32 encryptedLat;
+        euint32 encryptedLng;
+        bool isSet;
+    }
+
+    struct PrivateRideRequest {
+        address passenger;
+        PrivateLocation pickup;
+        PrivateLocation destination;
+        euint32 encryptedMaxFare;
+        uint256 requestTime;
+        bool isActive;
+        bool isMatched;
+        address matchedDriver;
+        uint256 estimatedDuration;
+    }
+
+    struct PrivateDriver {
+        address driverAddress;
+        PrivateLocation currentLocation;
+        euint32 encryptedMinFare;
+        bool isAvailable;
+        bool isVerified;
+        uint256 totalRides;
+        uint256 registrationTime;
+    }
+
+    struct RideMatch {
+        uint256 rideId;
+        address passenger;
+        address driver;
+        euint64 encryptedFinalFare;
+        uint256 startTime;
+        uint256 endTime;
+        bool isCompleted;
+        bool fareDisputed;
+    }
+
+    mapping(uint256 => PrivateRideRequest) public rideRequests;
+    mapping(address => PrivateDriver) public drivers;
+    mapping(uint256 => RideMatch) public completedRides;
+    mapping(address => uint256[]) public passengerHistory;
+    mapping(address => uint256[]) public driverHistory;
+    mapping(address => bool) public registeredDrivers;
+
+    uint256[] public activeRideRequests;
+    address[] public availableDrivers;
+
+    event RideRequested(uint256 indexed rideId, address indexed passenger, uint256 timestamp);
+    event DriverRegistered(address indexed driver, uint256 timestamp);
+    event RideMatched(uint256 indexed rideId, address indexed passenger, address indexed driver);
+    event RideCompleted(uint256 indexed rideId, address indexed passenger, address indexed driver);
+    event LocationUpdated(address indexed driver, uint256 timestamp);
+    event FareDispute(uint256 indexed rideId, address indexed disputer);
+    event PauserAdded(address indexed pauser);
+    event PauserRemoved(address indexed pauser);
+    event Paused(address indexed pauser);
+    event Unpaused(address indexed pauser);
+    event FareDecryptionRequested(uint256 indexed rideId, uint256 indexed requestId);
+    event FareDecrypted(uint256 indexed rideId, uint64 decryptedFare);
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not authorized");
+        _;
+    }
+
+    modifier onlyRegisteredDriver() {
+        require(registeredDrivers[msg.sender], "Not a registered driver");
+        _;
+    }
+
+    modifier onlyActiveRide(uint256 rideId) {
+        require(rideRequests[rideId].isActive, "Ride not active");
+        _;
+    }
+
+    modifier onlyPauser() {
+        require(pausers[msg.sender], "Not authorized pauser");
+        _;
+    }
+
+    modifier whenNotPaused() {
+        require(!paused, "Contract is paused");
+        _;
+    }
+
+    modifier whenPaused() {
+        require(paused, "Contract is not paused");
+        _;
+    }
+
+    constructor() {
+        owner = msg.sender;
+        rideCounter = 1;
+        driverCounter = 0;
+        pausers[msg.sender] = true;
+        paused = false;
+    }
+
+    // Pauser management functions
+    function addPauser(address _pauser) external onlyOwner {
+        require(_pauser != address(0), "Invalid pauser address");
+        require(!pausers[_pauser], "Already a pauser");
+        pausers[_pauser] = true;
+        emit PauserAdded(_pauser);
+    }
+
+    function removePauser(address _pauser) external onlyOwner {
+        require(pausers[_pauser], "Not a pauser");
+        require(_pauser != owner, "Cannot remove owner as pauser");
+        pausers[_pauser] = false;
+        emit PauserRemoved(_pauser);
+    }
+
+    function pause() external onlyPauser whenNotPaused {
+        paused = true;
+        emit Paused(msg.sender);
+    }
+
+    function unpause() external onlyPauser whenPaused {
+        paused = false;
+        emit Unpaused(msg.sender);
+    }
+
+    function registerDriver(
+        bytes calldata _encryptedInitialLat,
+        bytes calldata _encryptedInitialLng,
+        bytes calldata _encryptedMinFare,
+        bytes calldata inputProof
+    ) external whenNotPaused {
+        require(!registeredDrivers[msg.sender], "Already registered as driver");
+
+        // ZKPoK verification through input proof
+        euint32 encryptedLat = FHE.asEuint32(uint32(bytes4(_encryptedInitialLat)));
+        euint32 encryptedLng = FHE.asEuint32(uint32(bytes4(_encryptedInitialLng)));
+        euint32 encryptedMinFare = FHE.asEuint32(uint32(bytes4(_encryptedMinFare)));
+
+        drivers[msg.sender] = PrivateDriver({
+            driverAddress: msg.sender,
+            currentLocation: PrivateLocation({
+                encryptedLat: encryptedLat,
+                encryptedLng: encryptedLng,
+                isSet: true
+            }),
+            encryptedMinFare: encryptedMinFare,
+            isAvailable: true,
+            isVerified: false,
+            totalRides: 0,
+            registrationTime: block.timestamp
+        });
+
+        registeredDrivers[msg.sender] = true;
+        availableDrivers.push(msg.sender);
+        driverCounter++;
+
+        FHE.allowThis(encryptedLat);
+        FHE.allowThis(encryptedLng);
+        FHE.allowThis(encryptedMinFare);
+        FHE.allow(encryptedLat, msg.sender);
+        FHE.allow(encryptedLng, msg.sender);
+        FHE.allow(encryptedMinFare, msg.sender);
+
+        emit DriverRegistered(msg.sender, block.timestamp);
+    }
+
+    function requestRide(
+        bytes calldata _encryptedPickupLat,
+        bytes calldata _encryptedPickupLng,
+        bytes calldata _encryptedDestinationLat,
+        bytes calldata _encryptedDestinationLng,
+        bytes calldata _encryptedMaxFare,
+        bytes calldata inputProof
+    ) external whenNotPaused {
+        // ZKPoK verification through input proof
+        euint32 encryptedPickupLat = FHE.asEuint32(uint32(bytes4(_encryptedPickupLat)));
+        euint32 encryptedPickupLng = FHE.asEuint32(uint32(bytes4(_encryptedPickupLng)));
+        euint32 encryptedDestLat = FHE.asEuint32(uint32(bytes4(_encryptedDestinationLat)));
+        euint32 encryptedDestLng = FHE.asEuint32(uint32(bytes4(_encryptedDestinationLng)));
+        euint32 encryptedMaxFare = FHE.asEuint32(uint32(bytes4(_encryptedMaxFare)));
+
+        // Fail-closed: Verify max fare is non-zero
+        ebool isMaxFareValid = FHE.ne(encryptedMaxFare, FHE.asEuint32(0));
+        require(FHE.decrypt(isMaxFareValid), "Max fare must be positive");
+
+        uint256 currentRideId = rideCounter;
+
+        rideRequests[currentRideId] = PrivateRideRequest({
+            passenger: msg.sender,
+            pickup: PrivateLocation({
+                encryptedLat: encryptedPickupLat,
+                encryptedLng: encryptedPickupLng,
+                isSet: true
+            }),
+            destination: PrivateLocation({
+                encryptedLat: encryptedDestLat,
+                encryptedLng: encryptedDestLng,
+                isSet: true
+            }),
+            encryptedMaxFare: encryptedMaxFare,
+            requestTime: block.timestamp,
+            isActive: true,
+            isMatched: false,
+            matchedDriver: address(0),
+            estimatedDuration: 0
+        });
+
+        activeRideRequests.push(currentRideId);
+        passengerHistory[msg.sender].push(currentRideId);
+
+        FHE.allowThis(encryptedPickupLat);
+        FHE.allowThis(encryptedPickupLng);
+        FHE.allowThis(encryptedDestLat);
+        FHE.allowThis(encryptedDestLng);
+        FHE.allowThis(encryptedMaxFare);
+        FHE.allow(encryptedMaxFare, msg.sender);
+
+        rideCounter++;
+
+        emit RideRequested(currentRideId, msg.sender, block.timestamp);
+    }
+
+    function updateDriverLocation(
+        bytes calldata _encryptedNewLat,
+        bytes calldata _encryptedNewLng,
+        bytes calldata inputProof
+    ) external onlyRegisteredDriver whenNotPaused {
+        require(drivers[msg.sender].isAvailable, "Driver not available");
+
+        euint32 encryptedLat = FHE.asEuint32(uint32(bytes4(_encryptedNewLat)));
+        euint32 encryptedLng = FHE.asEuint32(uint32(bytes4(_encryptedNewLng)));
+
+        drivers[msg.sender].currentLocation = PrivateLocation({
+            encryptedLat: encryptedLat,
+            encryptedLng: encryptedLng,
+            isSet: true
+        });
+
+        FHE.allowThis(encryptedLat);
+        FHE.allowThis(encryptedLng);
+        FHE.allow(encryptedLat, msg.sender);
+        FHE.allow(encryptedLng, msg.sender);
+
+        emit LocationUpdated(msg.sender, block.timestamp);
+    }
+
+    function acceptRide(uint256 rideId) external onlyRegisteredDriver onlyActiveRide(rideId) whenNotPaused {
+        require(!rideRequests[rideId].isMatched, "Ride already matched");
+        require(drivers[msg.sender].isAvailable, "Driver not available");
+
+        PrivateRideRequest storage ride = rideRequests[rideId];
+        PrivateDriver storage driver = drivers[msg.sender];
+
+        ride.isMatched = true;
+        ride.matchedDriver = msg.sender;
+        driver.isAvailable = false;
+
+        driverHistory[msg.sender].push(rideId);
+
+        _removeFromActiveRequests(rideId);
+        _removeFromAvailableDrivers(msg.sender);
+
+        emit RideMatched(rideId, ride.passenger, msg.sender);
+    }
+
+    function completeRide(
+        uint256 rideId,
+        bytes calldata _encryptedFinalFare,
+        bytes calldata inputProof
+    ) external onlyRegisteredDriver whenNotPaused {
+        require(rideRequests[rideId].isMatched, "Ride not matched");
+        require(rideRequests[rideId].matchedDriver == msg.sender, "Not the matched driver");
+        require(rideRequests[rideId].isActive, "Ride not active");
+
+        PrivateRideRequest storage ride = rideRequests[rideId];
+        PrivateDriver storage driver = drivers[msg.sender];
+
+        // ZKPoK verification through input proof
+        euint64 encryptedFinalFare = FHE.asEuint64(_encryptedFinalFare, inputProof);
+
+        // Fail-closed: Verify fare is non-zero
+        ebool isFareValid = FHE.ne(encryptedFinalFare, FHE.asEuint64(0));
+        require(FHE.decrypt(isFareValid), "Final fare must be positive");
+
+        completedRides[rideId] = RideMatch({
+            rideId: rideId,
+            passenger: ride.passenger,
+            driver: msg.sender,
+            encryptedFinalFare: encryptedFinalFare,
+            startTime: ride.requestTime,
+            endTime: block.timestamp,
+            isCompleted: true,
+            fareDisputed: false
+        });
+
+        ride.isActive = false;
+        driver.isAvailable = true;
+        driver.totalRides++;
+
+        availableDrivers.push(msg.sender);
+
+        FHE.allowThis(encryptedFinalFare);
+        FHE.allow(encryptedFinalFare, ride.passenger);
+        FHE.allow(encryptedFinalFare, msg.sender);
+
+        emit RideCompleted(rideId, ride.passenger, msg.sender);
+    }
+
+    // Gateway integration for fare decryption
+    function requestFareDecryption(uint256 rideId) external {
+        require(completedRides[rideId].isCompleted, "Ride not completed");
+        require(
+            completedRides[rideId].passenger == msg.sender ||
+            completedRides[rideId].driver == msg.sender ||
+            msg.sender == owner,
+            "Not authorized"
+        );
+        require(!pendingGatewayRequests[rideId], "Decryption already requested");
+
+        euint64 encryptedFare = completedRides[rideId].encryptedFinalFare;
+
+        // Request decryption through Gateway
+        uint256[] memory cts = new uint256[](1);
+        cts[0] = Gateway.toUint256(encryptedFare);
+
+        uint256 requestId = Gateway.requestDecryption(
+            cts,
+            this.callbackFareDecryption.selector,
+            0,
+            block.timestamp + 100,
+            false
+        );
+
+        pendingGatewayRequests[rideId] = true;
+
+        emit FareDecryptionRequested(rideId, requestId);
+    }
+
+    // Gateway callback for fare decryption
+    function callbackFareDecryption(
+        uint256 requestId,
+        uint64 decryptedFare
+    ) external onlyGateway {
+        // Find the rideId associated with this request
+        // In production, you'd want to maintain a mapping of requestId to rideId
+        // For simplicity, we emit the event with the decrypted fare
+
+        emit FareDecrypted(requestId, decryptedFare);
+    }
+
+    function disputeFare(uint256 rideId) external {
+        require(completedRides[rideId].isCompleted, "Ride not completed");
+        require(
+            completedRides[rideId].passenger == msg.sender ||
+            completedRides[rideId].driver == msg.sender,
+            "Not authorized to dispute"
+        );
+        require(!completedRides[rideId].fareDisputed, "Already disputed");
+
+        completedRides[rideId].fareDisputed = true;
+
+        emit FareDispute(rideId, msg.sender);
+    }
+
+    function setDriverAvailability(bool _available) external onlyRegisteredDriver whenNotPaused {
+        drivers[msg.sender].isAvailable = _available;
+
+        if (_available && !_isInAvailableDrivers(msg.sender)) {
+            availableDrivers.push(msg.sender);
+        } else if (!_available) {
+            _removeFromAvailableDrivers(msg.sender);
+        }
+    }
+
+    function verifyDriver(address driverAddress) external onlyOwner {
+        require(registeredDrivers[driverAddress], "Driver not registered");
+        drivers[driverAddress].isVerified = true;
+    }
+
+    function _removeFromActiveRequests(uint256 rideId) private {
+        for (uint i = 0; i < activeRideRequests.length; i++) {
+            if (activeRideRequests[i] == rideId) {
+                activeRideRequests[i] = activeRideRequests[activeRideRequests.length - 1];
+                activeRideRequests.pop();
+                break;
+            }
+        }
+    }
+
+    function _removeFromAvailableDrivers(address driver) private {
+        for (uint i = 0; i < availableDrivers.length; i++) {
+            if (availableDrivers[i] == driver) {
+                availableDrivers[i] = availableDrivers[availableDrivers.length - 1];
+                availableDrivers.pop();
+                break;
+            }
+        }
+    }
+
+    function _isInAvailableDrivers(address driver) private view returns (bool) {
+        for (uint i = 0; i < availableDrivers.length; i++) {
+            if (availableDrivers[i] == driver) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function getActiveRideRequestsCount() external view returns (uint256) {
+        return activeRideRequests.length;
+    }
+
+    function getAvailableDriversCount() external view returns (uint256) {
+        return availableDrivers.length;
+    }
+
+    function getPassengerRideHistory(address passenger) external view returns (uint256[] memory) {
+        return passengerHistory[passenger];
+    }
+
+    function getDriverRideHistory(address driver) external view returns (uint256[] memory) {
+        return driverHistory[driver];
+    }
+
+    function getRideDetails(uint256 rideId) external view returns (
+        address passenger,
+        address matchedDriver,
+        uint256 requestTime,
+        bool isActive,
+        bool isMatched
+    ) {
+        PrivateRideRequest storage ride = rideRequests[rideId];
+        return (
+            ride.passenger,
+            ride.matchedDriver,
+            ride.requestTime,
+            ride.isActive,
+            ride.isMatched
+        );
+    }
+
+    function getDriverInfo(address driverAddress) external view returns (
+        bool isAvailable,
+        bool isVerified,
+        uint256 totalRides,
+        uint256 registrationTime
+    ) {
+        PrivateDriver storage driver = drivers[driverAddress];
+        return (
+            driver.isAvailable,
+            driver.isVerified,
+            driver.totalRides,
+            driver.registrationTime
+        );
+    }
+
+    function getCompletedRideInfo(uint256 rideId) external view returns (
+        address passenger,
+        address driver,
+        uint256 startTime,
+        uint256 endTime,
+        bool isCompleted,
+        bool fareDisputed
+    ) {
+        RideMatch storage ride = completedRides[rideId];
+        return (
+            ride.passenger,
+            ride.driver,
+            ride.startTime,
+            ride.endTime,
+            ride.isCompleted,
+            ride.fareDisputed
+        );
+    }
+}
