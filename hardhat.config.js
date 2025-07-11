@@ -1,8 +1,4 @@
 require("@nomicfoundation/hardhat-toolbox");
-require("@fhevm/hardhat-plugin");
-require("hardhat-contract-sizer");
-require("hardhat-deploy");
-require("@typechain/hardhat");
 require("dotenv").config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
@@ -13,27 +9,7 @@ module.exports = {
       optimizer: {
         enabled: true,
         runs: 200
-      },
-      viaIR: false
-    }
-  },
-  typechain: {
-    outDir: "typechain-types",
-    target: "ethers-v6",
-    alwaysGenerateOverloads: false,
-    externalArtifacts: ["externalArtifacts/*.json"],
-    dontOverrideCompile: false
-  },
-  contractSizer: {
-    alphaSort: true,
-    disambiguatePaths: false,
-    runOnCompile: true,
-    strict: true,
-    only: []
-  },
-  namedAccounts: {
-    deployer: {
-      default: 0
+      }
     }
   },
   networks: {

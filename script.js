@@ -8,19 +8,15 @@ class PrivateRideShareApp {
         this.userAddress = null;
 
         // Contract configuration
-        this.contractAddress = "0x5986FF19B524534F159af67f421ca081c6F5Acff"; // Replace with actual deployed contract address
+        this.contractAddress = "0x87288E6cEE215e01d2704c0d4d01EAF1d192659d"; // Replace with actual deployed contract address
         this.contractABI = [
-            "function registerDriver(tuple(bytes data) _encryptedInitialLat, tuple(bytes data) _encryptedInitialLng, tuple(bytes data) _encryptedMinFare, bytes inputProof) external",
-            "function requestRide(tuple(bytes data) _encryptedPickupLat, tuple(bytes data) _encryptedPickupLng, tuple(bytes data) _encryptedDestinationLat, tuple(bytes data) _encryptedDestinationLng, tuple(bytes data) _encryptedMaxFare, bytes inputProof) external",
-            "function updateDriverLocation(tuple(bytes data) _encryptedNewLat, tuple(bytes data) _encryptedNewLng, bytes inputProof) external",
+            "function registerDriver(uint32 _initialLat, uint32 _initialLng, uint32 _minFare) external",
+            "function requestRide(uint32 _pickupLat, uint32 _pickupLng, uint32 _destinationLat, uint32 _destinationLng, uint32 _maxFare) external",
+            "function updateDriverLocation(uint32 _newLat, uint32 _newLng) external",
             "function acceptRide(uint256 rideId) external",
-            "function completeRide(uint256 rideId, tuple(bytes data) _encryptedFinalFare, bytes inputProof) external",
+            "function completeRide(uint256 rideId, uint32 _finalFare) external",
             "function setDriverAvailability(bool _available) external",
             "function disputeFare(uint256 rideId) external",
-            "function pause() external",
-            "function unpause() external",
-            "function requestFareDecryption(uint256 rideId) external",
-            "function paused() external view returns (bool)",
             "function getActiveRideRequestsCount() external view returns (uint256)",
             "function getAvailableDriversCount() external view returns (uint256)",
             "function getPassengerRideHistory(address passenger) external view returns (uint256[])",
@@ -88,19 +84,12 @@ class PrivateRideShareApp {
             this.signer = this.provider.getSigner();
             this.userAddress = await this.signer.getAddress();
 
-            // Initialize FHEVM using fhevmjs
+            // Initialize FHEVM
             try {
-                const { createInstance } = await import('https://cdn.jsdelivr.net/npm/fhevmjs@0.5.0/+esm');
-                this.fhevm = await createInstance({
-                    chainId: parseInt(window.ethereum.networkVersion),
-                    publicKey: '', // Will be fetched from contract
+                this.fhevm = await createFhevmInstance({
+                    network: window.ethereum.networkVersion,
                     gatewayUrl: "https://gateway.sepolia.zama.ai"
                 });
-
-                // Generate token for encryption
-                const signature = await this.signer.signMessage("Access to encrypted data");
-                this.encryptionToken = signature;
-
             } catch (error) {
                 console.warn('FHE initialization failed, continuing with basic functionality:', error);
             }
@@ -166,11 +155,7 @@ class PrivateRideShareApp {
             return;
         }
 
-        if (!this.fhevm) {
-            this.showMessage('FHE not initialized. Please reconnect your wallet.', 'error');
-            return;
-        }
-
+        const formData = new FormData(event.target);
         const pickupLat = Math.floor(parseFloat(document.getElementById('pickupLat').value) * 1000000);
         const pickupLng = Math.floor(parseFloat(document.getElementById('pickupLng').value) * 1000000);
         const destLat = Math.floor(parseFloat(document.getElementById('destLat').value) * 1000000);
@@ -179,31 +164,7 @@ class PrivateRideShareApp {
 
         try {
             this.showLoading(true);
-
-            // Encrypt values using fhevmjs
-            const encryptedPickupLat = await this.fhevm.encrypt32(pickupLat);
-            const encryptedPickupLng = await this.fhevm.encrypt32(pickupLng);
-            const encryptedDestLat = await this.fhevm.encrypt32(destLat);
-            const encryptedDestLng = await this.fhevm.encrypt32(destLng);
-            const encryptedMaxFare = await this.fhevm.encrypt32(maxFare);
-
-            // Get input proof
-            const inputProof = await this.fhevm.generateProof([
-                encryptedPickupLat,
-                encryptedPickupLng,
-                encryptedDestLat,
-                encryptedDestLng,
-                encryptedMaxFare
-            ]);
-
-            const tx = await this.contract.requestRide(
-                encryptedPickupLat,
-                encryptedPickupLng,
-                encryptedDestLat,
-                encryptedDestLng,
-                encryptedMaxFare,
-                inputProof
-            );
+            const tx = await this.contract.requestRide(pickupLat, pickupLng, destLat, destLng, maxFare);
             await tx.wait();
 
             this.showMessage('Ride requested successfully! Waiting for driver acceptance.', 'success');
@@ -226,36 +187,13 @@ class PrivateRideShareApp {
             return;
         }
 
-        if (!this.fhevm) {
-            this.showMessage('FHE not initialized. Please reconnect your wallet.', 'error');
-            return;
-        }
-
         const lat = Math.floor(parseFloat(document.getElementById('driverLat').value) * 1000000);
         const lng = Math.floor(parseFloat(document.getElementById('driverLng').value) * 1000000);
         const minFare = parseInt(document.getElementById('minFare').value);
 
         try {
             this.showLoading(true);
-
-            // Encrypt values using fhevmjs
-            const encryptedLat = await this.fhevm.encrypt32(lat);
-            const encryptedLng = await this.fhevm.encrypt32(lng);
-            const encryptedMinFare = await this.fhevm.encrypt32(minFare);
-
-            // Get input proof
-            const inputProof = await this.fhevm.generateProof([
-                encryptedLat,
-                encryptedLng,
-                encryptedMinFare
-            ]);
-
-            const tx = await this.contract.registerDriver(
-                encryptedLat,
-                encryptedLng,
-                encryptedMinFare,
-                inputProof
-            );
+            const tx = await this.contract.registerDriver(lat, lng, minFare);
             await tx.wait();
 
             this.showMessage('Successfully registered as driver!', 'success');
@@ -276,11 +214,6 @@ class PrivateRideShareApp {
             return;
         }
 
-        if (!this.fhevm) {
-            this.showMessage('FHE not initialized. Please reconnect your wallet.', 'error');
-            return;
-        }
-
         const lat = prompt('Enter new latitude (e.g., 40.7128):');
         const lng = prompt('Enter new longitude (e.g., -74.0060):');
 
@@ -291,14 +224,7 @@ class PrivateRideShareApp {
             const latInt = Math.floor(parseFloat(lat) * 1000000);
             const lngInt = Math.floor(parseFloat(lng) * 1000000);
 
-            // Encrypt values using fhevmjs
-            const encryptedLat = await this.fhevm.encrypt32(latInt);
-            const encryptedLng = await this.fhevm.encrypt32(lngInt);
-
-            // Get input proof
-            const inputProof = await this.fhevm.generateProof([encryptedLat, encryptedLng]);
-
-            const tx = await this.contract.updateDriverLocation(encryptedLat, encryptedLng, inputProof);
+            const tx = await this.contract.updateDriverLocation(latInt, lngInt);
             await tx.wait();
 
             this.showMessage('Location updated successfully!', 'success');
@@ -388,24 +314,12 @@ class PrivateRideShareApp {
     async completeRide(rideId) {
         if (!this.contract) return;
 
-        if (!this.fhevm) {
-            this.showMessage('FHE not initialized. Please reconnect your wallet.', 'error');
-            return;
-        }
-
         const finalFare = prompt('Enter final fare (in Wei):');
         if (!finalFare) return;
 
         try {
             this.showLoading(true);
-
-            // Encrypt fare using fhevmjs
-            const encryptedFare = await this.fhevm.encrypt64(parseInt(finalFare));
-
-            // Get input proof
-            const inputProof = await this.fhevm.generateProof([encryptedFare]);
-
-            const tx = await this.contract.completeRide(rideId, encryptedFare, inputProof);
+            const tx = await this.contract.completeRide(rideId, parseInt(finalFare));
             await tx.wait();
 
             this.showMessage(`Ride #${rideId} completed successfully!`, 'success');
