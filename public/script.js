@@ -8,7 +8,7 @@ class PrivateRideShareApp {
         this.userAddress = null;
 
         // Contract configuration
-        this.contractAddress = "0x5986FF19B524534F159af67f421ca081c6F5Acff"; // Replace with actual deployed contract address
+        this.contractAddress = "0x87288E6cEE215e01d2704c0d4d01EAF1d192659d"; // Replace with actual deployed contract address
         this.contractABI = [
             "function registerDriver(uint32 _initialLat, uint32 _initialLng, uint32 _minFare) external",
             "function requestRide(uint32 _pickupLat, uint32 _pickupLng, uint32 _destinationLat, uint32 _destinationLng, uint32 _maxFare) external",
