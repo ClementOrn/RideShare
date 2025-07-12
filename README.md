@@ -61,9 +61,10 @@ NEXT_PUBLIC_NETWORK=sepolia
 
 ### Contract Address
 
-**Sepolia Testnet**: `0x5986FF19B524534F159af67f421ca081c6F5Acff`
+**Sepolia Testnet**: `0x87288E6cEE215e01d2704c0d4d01EAF1d192659d`
 
-**Etherscan**: https://sepolia.etherscan.io/address/0x5986FF19B524534F159af67f421ca081c6F5Acff
+**Etherscan**: https://sepolia.etherscan.io/address/0x87288E6cEE215e01d2704c0d4d01EAF1d192659d
+
 
 ## 📁 Project Structure
 
