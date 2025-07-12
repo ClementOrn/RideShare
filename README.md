@@ -2,6 +2,14 @@
 
 Modern decentralized rideshare application built with Next.js, TypeScript, and Ethereum.
 
+## 🌐 Live Demo
+
+**Frontend**: [https://ride-share-six.vercel.app](https://ride-share-six.vercel.app)
+
+**Smart Contract**: [0x5986FF19B524534F159af67f421ca081c6F5Acff](https://sepolia.etherscan.io/address/0x5986FF19B524534F159af67f421ca081c6F5Acff) (Sepolia Testnet)
+
+**Demo Video**: Download and watch `demo.mp4` from this directory
+
 ## 🚀 Technology Stack
 
 - **Framework**: Next.js 14 with App Router
@@ -55,15 +63,15 @@ Create `.env.local`:
 
 ```bash
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id
-NEXT_PUBLIC_CONTRACT_ADDRESS=0x87288E6cEE215e01d2704c0d4d01EAF1d192659d
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x5986FF19B524534F159af67f421ca081c6F5Acff
 NEXT_PUBLIC_NETWORK=sepolia
 ```
 
 ### Contract Address
 
-**Sepolia Testnet**: `0x87288E6cEE215e01d2704c0d4d01EAF1d192659d`
+**Sepolia Testnet**: `0x5986FF19B524534F159af67f421ca081c6F5Acff`
 
-**Etherscan**: https://sepolia.etherscan.io/address/0x87288E6cEE215e01d2704c0d4d01EAF1d192659d
+**Etherscan**: https://sepolia.etherscan.io/address/0x5986FF19B524534F159af67f421ca081c6F5Acff
 
 
 ## 📁 Project Structure
@@ -246,7 +254,7 @@ Create `vercel.json`:
   "regions": ["iad1"],
   "env": {
     "NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID": "@walletconnect-id",
-    "NEXT_PUBLIC_CONTRACT_ADDRESS": "0x87288E6cEE215e01d2704c0d4d01EAF1d192659d"
+    "NEXT_PUBLIC_CONTRACT_ADDRESS": "0x5986FF19B524534F159af67f421ca081c6F5Acff"
   }
 }
 ```
@@ -264,7 +272,7 @@ npm run type-check  # Check TypeScript types
 ## 🔗 Links
 
 - **Live Demo**: https://rideshare-platform.vercel.app (deploy yours!)
-- **Contract**: https://sepolia.etherscan.io/address/0x87288E6cEE215e01d2704c0d4d01EAF1d192659d
+- **Contract**: https://sepolia.etherscan.io/address/0x5986FF19B524534F159af67f421ca081c6F5Acff
 - **Documentation**: See `/docs` folder
 
 ## 🛠 Development
@@ -288,6 +296,33 @@ npm run type-check  # Check TypeScript types
 3. Run dev server: `npm run dev`
 4. Connect wallet and test features
 
+## 🎬 Demo & Deployment
+
+### Live Application
+Visit the deployed application: **[https://ride-share-six.vercel.app](https://ride-share-six.vercel.app)**
+
+Features to try:
+- Connect your wallet (MetaMask recommended)
+- Switch to Sepolia testnet
+- Register as a driver or request a ride as passenger
+- View real-time statistics
+- Check your transaction history
+
+### Demo Video
+Watch `demo.mp4` in this directory for a complete walkthrough of the application.
+
+### Smart Contract
+Deployed and verified on Sepolia:
+- **Address**: `0x5986FF19B524534F159af67f421ca081c6F5Acff`
+- **Explorer**: [View on Etherscan](https://sepolia.etherscan.io/address/0x5986FF19B524534F159af67f421ca081c6F5Acff)
+- **Network**: Sepolia Testnet (Chain ID: 11155111)
+
+### Deployment Platform
+- **Platform**: Vercel
+- **Build**: Automatic on push
+- **Environment**: Production-optimized
+- **CDN**: Global edge network
+
 ## 📚 Resources
 
 - [Next.js Documentation](https://nextjs.org/docs)
@@ -296,6 +331,14 @@ npm run type-check  # Check TypeScript types
 - [Radix UI](https://radix-ui.com/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Vercel Deployment](https://vercel.com/docs)
+
+## 🔗 Competition Submission
+
+This project includes a **Universal FHEVM SDK** for the FHEVM Competition. See the `fhevm-react-template/` directory for:
+- Complete SDK implementation
+- Integration examples
+- Comprehensive documentation
+- API reference
 
 ## 🤝 Contributing
 
@@ -308,3 +351,7 @@ MIT License
 ---
 
 **Built with ❤️ using Next.js and Ethereum**
+
+**Live Demo**: [https://ride-share-six.vercel.app](https://ride-share-six.vercel.app)
+
+**Smart Contract**: [0x5986FF19B524534F159af67f421ca081c6F5Acff](https://sepolia.etherscan.io/address/0x5986FF19B524534F159af67f421ca081c6F5Acff)
