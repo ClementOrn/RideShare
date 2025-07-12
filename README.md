@@ -55,7 +55,7 @@ Create `.env.local`:
 
 ```bash
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id
-NEXT_PUBLIC_CONTRACT_ADDRESS=0x5986FF19B524534F159af67f421ca081c6F5Acff
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x87288E6cEE215e01d2704c0d4d01EAF1d192659d
 NEXT_PUBLIC_NETWORK=sepolia
 ```
 
@@ -246,7 +246,7 @@ Create `vercel.json`:
   "regions": ["iad1"],
   "env": {
     "NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID": "@walletconnect-id",
-    "NEXT_PUBLIC_CONTRACT_ADDRESS": "0x5986FF19B524534F159af67f421ca081c6F5Acff"
+    "NEXT_PUBLIC_CONTRACT_ADDRESS": "0x87288E6cEE215e01d2704c0d4d01EAF1d192659d"
   }
 }
 ```
@@ -264,7 +264,7 @@ npm run type-check  # Check TypeScript types
 ## 🔗 Links
 
 - **Live Demo**: https://rideshare-platform.vercel.app (deploy yours!)
-- **Contract**: https://sepolia.etherscan.io/address/0x5986FF19B524534F159af67f421ca081c6F5Acff
+- **Contract**: https://sepolia.etherscan.io/address/0x87288E6cEE215e01d2704c0d4d01EAF1d192659d
 - **Documentation**: See `/docs` folder
 
 ## 🛠 Development
