@@ -6,7 +6,7 @@ Modern decentralized rideshare application built with Next.js, TypeScript, and E
 
 **Frontend**: [https://ride-share-six.vercel.app](https://ride-share-six.vercel.app)
 
-**Smart Contract**: [0x5986FF19B524534F159af67f421ca081c6F5Acff](https://sepolia.etherscan.io/address/0x5986FF19B524534F159af67f421ca081c6F5Acff) (Sepolia Testnet)
+**Smart Contract**: [0x87288E6cEE215e01d2704c0d4d01EAF1d192659d](https://sepolia.etherscan.io/address/0x87288E6cEE215e01d2704c0d4d01EAF1d192659d) (Sepolia Testnet)
 
 **Demo Video**: Download and watch `demo.mp4` from this directory
 
@@ -63,15 +63,15 @@ Create `.env.local`:
 
 ```bash
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id
-NEXT_PUBLIC_CONTRACT_ADDRESS=0x5986FF19B524534F159af67f421ca081c6F5Acff
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x87288E6cEE215e01d2704c0d4d01EAF1d192659d
 NEXT_PUBLIC_NETWORK=sepolia
 ```
 
 ### Contract Address
 
-**Sepolia Testnet**: `0x5986FF19B524534F159af67f421ca081c6F5Acff`
+**Sepolia Testnet**: `0x87288E6cEE215e01d2704c0d4d01EAF1d192659d`
 
-**Etherscan**: https://sepolia.etherscan.io/address/0x5986FF19B524534F159af67f421ca081c6F5Acff
+**Etherscan**: https://sepolia.etherscan.io/address/0x87288E6cEE215e01d2704c0d4d01EAF1d192659d
 
 
 ## 📁 Project Structure
@@ -254,7 +254,7 @@ Create `vercel.json`:
   "regions": ["iad1"],
   "env": {
     "NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID": "@walletconnect-id",
-    "NEXT_PUBLIC_CONTRACT_ADDRESS": "0x5986FF19B524534F159af67f421ca081c6F5Acff"
+    "NEXT_PUBLIC_CONTRACT_ADDRESS": "0x87288E6cEE215e01d2704c0d4d01EAF1d192659d"
   }
 }
 ```
@@ -272,7 +272,7 @@ npm run type-check  # Check TypeScript types
 ## 🔗 Links
 
 - **Live Demo**: https://rideshare-platform.vercel.app (deploy yours!)
-- **Contract**: https://sepolia.etherscan.io/address/0x5986FF19B524534F159af67f421ca081c6F5Acff
+- **Contract**: https://sepolia.etherscan.io/address/0x87288E6cEE215e01d2704c0d4d01EAF1d192659d
 - **Documentation**: See `/docs` folder
 
 ## 🛠 Development
@@ -313,8 +313,8 @@ Watch `demo.mp4` in this directory for a complete walkthrough of the application
 
 ### Smart Contract
 Deployed and verified on Sepolia:
-- **Address**: `0x5986FF19B524534F159af67f421ca081c6F5Acff`
-- **Explorer**: [View on Etherscan](https://sepolia.etherscan.io/address/0x5986FF19B524534F159af67f421ca081c6F5Acff)
+- **Address**: `0x87288E6cEE215e01d2704c0d4d01EAF1d192659d`
+- **Explorer**: [View on Etherscan](https://sepolia.etherscan.io/address/0x87288E6cEE215e01d2704c0d4d01EAF1d192659d)
 - **Network**: Sepolia Testnet (Chain ID: 11155111)
 
 ### Deployment Platform
@@ -354,4 +354,4 @@ MIT License
 
 **Live Demo**: [https://ride-share-six.vercel.app](https://ride-share-six.vercel.app)
 
-**Smart Contract**: [0x5986FF19B524534F159af67f421ca081c6F5Acff](https://sepolia.etherscan.io/address/0x5986FF19B524534F159af67f421ca081c6F5Acff)
+**Smart Contract**: [0x87288E6cEE215e01d2704c0d4d01EAF1d192659d](https://sepolia.etherscan.io/address/0x87288E6cEE215e01d2704c0d4d01EAF1d192659d)
