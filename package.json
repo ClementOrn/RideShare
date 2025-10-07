@@ -1,38 +1,42 @@
 {
-  "name": "private-rideshare-dapp",
+  "name": "private-rideshare-platform",
   "version": "1.0.0",
-  "description": "Private Ride Share DApp with Fully Homomorphic Encryption",
-  "main": "index.html",
+  "private": true,
   "scripts": {
-    "dev": "npx http-server . -p 3000 -c-1 --cors",
-    "build": "echo 'Static site - no build required'",
-    "start": "npx http-server . -p 8080 -c-1 --cors",
+    "dev": "next dev -p 1311",
+    "build": "next build",
+    "start": "next start -p 1311",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
     "compile": "npx hardhat compile",
     "test": "npx hardhat test",
     "deploy": "npx hardhat run scripts/deploy.js",
     "deploy:sepolia": "npx hardhat run scripts/deploy.js --network sepolia",
-    "node": "npx hardhat node",
     "clean": "npx hardhat clean"
   },
-  "keywords": [
-    "blockchain",
-    "ethereum",
-    "rideshare",
-    "privacy",
-    "fhe",
-    "zama"
-  ],
-  "author": "Anonymous",
-  "license": "MIT",
-  "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
-    "hardhat": "^2.19.0",
-    "@types/node": "^20.0.0",
-    "typescript": "^5.0.0"
-  },
   "dependencies": {
-    "@fhevm/solidity": "^0.5.0",
-    "dotenv": "^16.3.1",
-    "ethers": "^6.8.0"
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "@rainbow-me/rainbowkit": "^2.1.0",
+    "wagmi": "^2.12.0",
+    "viem": "^2.19.0",
+    "@tanstack/react-query": "^5.51.0",
+    "fhevmjs": "^0.6.2",
+    "ethers": "^6.13.0",
+    "dotenv": "^16.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.5.0",
+    "tailwindcss": "^3.4.0",
+    "postcss": "^8.4.0",
+    "autoprefixer": "^10.4.0",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.0"
   }
 }
