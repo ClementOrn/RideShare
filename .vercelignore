@@ -1,63 +1,7 @@
-# Ignore everything by default
+# 忽略所有文件
 *
-!index.html
-!script.js
 
-# Allow public directory
+# 只允许这些文件/目录
+!vercel.json
 !public/
 !public/**
-
-# Explicitly ignore problematic directories
-.next/
-app/
-components/
-lib/
-node_modules/
-contracts/
-scripts/
-deploy/
-artifacts/
-cache/
-typechain-types/
-deployments/
-test/
-.github/
-.husky/
-fhevm-react-template/
-fhevmTemp/
-PrivateRideShare-main/
-
-# Ignore config files that might interfere
-next.config.js
-next-env.d.ts
-tsconfig.json
-postcss.config.js
-tailwind.config.ts
-hardhat.config.ts
-hardhat.config.js
-package.json
-package-lock.json
-
-# Ignore all markdown and documentation
-*.md
-
-# Ignore environment files
-.env*
-
-# Ignore other config files
-.prettierrc.json
-.prettierignore
-.solhint.json
-.lintstagedrc.json
-codecov.yml
-
-# Ignore backup files
-*.old
-*.bak
-
-# Ignore media files
-*.mp4
-*.png
-*.jpg
-*.jpeg
-*.gif
