@@ -54,6 +54,7 @@ tailwind.config.ts
 
 # Old backup files
 *.old
+*.backup
 
 # Hardhat
 coverage.json
