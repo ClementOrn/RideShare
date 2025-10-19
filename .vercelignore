@@ -1,7 +1,54 @@
-# 忽略所有文件
-*
+# =================================================================
+# 严格模式：只部署 public/ 目录和 vercel.json
+# =================================================================
 
-# 只允许这些文件/目录
+# 默认忽略所有文件
+*
+.*
+
+# 只允许这些文件
 !vercel.json
 !public/
 !public/**
+
+# 明确忽略所有可能干扰的文件（即使它们已被 * 忽略）
+*.backup
+package.json
+package-lock.json
+package.json.backup
+package-lock.json.backup
+next.config.js
+next.config.js.backup
+tsconfig.json
+tsconfig.json.backup
+next-env.d.ts
+next-env.d.ts.backup
+postcss.config.js
+tailwind.config.ts
+hardhat.config.js
+hardhat.config.ts
+.env
+.env.*
+
+# 明确忽略所有目录
+node_modules/
+.next/
+app/
+components/
+lib/
+contracts/
+scripts/
+deploy/
+artifacts/
+cache/
+typechain-types/
+deployments/
+test/
+.github/
+.husky/
+fhevm-react-template/
+fhevmTemp/
+PrivateRideShare-main/
+dist/
+build/
+out/
