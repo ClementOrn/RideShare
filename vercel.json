@@ -1,7 +1,12 @@
 {
+  "version": 2,
+  "buildCommand": null,
+  "devCommand": null,
+  "installCommand": null,
+  "framework": null,
+  "outputDirectory": "public",
   "cleanUrls": true,
   "trailingSlash": false,
-  "public": true,
   "rewrites": [
     {
       "source": "/(.*)",
