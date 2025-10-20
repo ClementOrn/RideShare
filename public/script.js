@@ -167,8 +167,21 @@ class PrivateRideShareApp {
         const destLat = Math.floor((parseFloat(document.getElementById('destLat').value) + 90) * 10000);
         const destLng = Math.floor((parseFloat(document.getElementById('destLng').value) + 180) * 10000);
 
-        // Convert fare to uint32 range (divide by 1000000 to fit in uint32)
-        const maxFare = Math.floor(parseInt(document.getElementById('maxFare').value) / 1000000);
+        // Convert fare to uint32 range (max: 4,294,967,295)
+        // User inputs in wei, we divide to fit in uint32
+        const maxFareInput = parseInt(document.getElementById('maxFare').value);
+        let maxFare = Math.floor(maxFareInput / 1000000);
+
+        // Ensure it's within uint32 range and positive
+        const UINT32_MAX = 4294967295;
+        if (maxFare <= 0) {
+            this.showMessage('Max fare must be greater than 1,000,000 wei', 'error');
+            return;
+        }
+        if (maxFare > UINT32_MAX) {
+            maxFare = UINT32_MAX;
+            this.showMessage(`Max fare capped at ${UINT32_MAX} (uint32 max)`, 'warning');
+        }
 
         try {
             this.showLoading(true);
@@ -199,8 +212,20 @@ class PrivateRideShareApp {
         const lat = Math.floor((parseFloat(document.getElementById('driverLat').value) + 90) * 10000);
         const lng = Math.floor((parseFloat(document.getElementById('driverLng').value) + 180) * 10000);
 
-        // Convert fare to uint32 range (divide by 1000000 to fit in uint32)
-        const minFare = Math.floor(parseInt(document.getElementById('minFare').value) / 1000000);
+        // Convert fare to uint32 range (max: 4,294,967,295)
+        const minFareInput = parseInt(document.getElementById('minFare').value);
+        let minFare = Math.floor(minFareInput / 1000000);
+
+        // Ensure it's within uint32 range and positive
+        const UINT32_MAX = 4294967295;
+        if (minFare <= 0) {
+            this.showMessage('Min fare must be greater than 1,000,000 wei', 'error');
+            return;
+        }
+        if (minFare > UINT32_MAX) {
+            minFare = UINT32_MAX;
+            this.showMessage(`Min fare capped at ${UINT32_MAX} (uint32 max)`, 'warning');
+        }
 
         try {
             this.showLoading(true);
