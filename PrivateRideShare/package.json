@@ -1,0 +1,57 @@
+{
+  "name": "private-rideshare-dapp",
+  "version": "1.0.0",
+  "description": "Private Ride Share DApp with Fully Homomorphic Encryption - Next.js Version",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "compile": "npx hardhat compile",
+    "test": "npx hardhat test",
+    "deploy": "npx hardhat run scripts/deploy.js",
+    "deploy:sepolia": "npx hardhat run scripts/deploy.js --network sepolia",
+    "node": "npx hardhat node",
+    "clean": "npx hardhat clean"
+  },
+  "keywords": [
+    "blockchain",
+    "ethereum",
+    "rideshare",
+    "privacy",
+    "fhe",
+    "zama",
+    "nextjs",
+    "react",
+    "fhevm"
+  ],
+  "author": "Anonymous",
+  "license": "MIT",
+  "dependencies": {
+    "@fhevm/universal-sdk": "file:../../packages/fhevm-sdk",
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "ethers": "^6.8.0",
+    "viem": "^2.21.0",
+    "wagmi": "^2.12.0",
+    "@tanstack/react-query": "^5.0.0"
+  },
+  "devDependencies": {
+    "@fhevm/solidity": "^0.5.0",
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.0",
+    "dotenv": "^16.3.1",
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^14.2.0",
+    "hardhat": "^2.19.0",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.6.0"
+  }
+}
