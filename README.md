@@ -8,7 +8,7 @@ Modern decentralized rideshare application with **Fully Homomorphic Encryption (
 
 **Smart Contract**: [0x87288E6cEE215e01d2704c0d4d01EAF1d192659d](https://sepolia.etherscan.io/address/0x87288E6cEE215e01d2704c0d4d01EAF1d192659d) (Sepolia Testnet)
 
-**Demo Video**: Download and watch `demo.mp4` from this directory
+**Demo Video**: Download and watch `demo.mp4` from this directory https://streamable.com/90il4s
 
 ## 🚀 Technology Stack
 
